@@ -219,7 +219,8 @@ function App() {
       if (squatCount.current % 5 === 0) {
         message = `Amazing! ${squatCount.current} reps! 🔥`;
       } else if (squatCount.current % 3 === 0 && aiCoachEnabled) {
-        getCoachingAdvice(squatCount.current).then((advice) => {
+        // FIX: Pass both arguments to getCoachingAdvice
+        getCoachingAdvice(landmarks, squatCount.current).then((advice) => {
           setFeedback(advice);
           speak(advice);
         });
@@ -253,7 +254,6 @@ function App() {
       <h1>🏋️ AI Fitness Coach</h1>
 
       <div className="main-layout">
-        {/* LEFT SIDE - Camera */}
         <div className="left-panel">
           <div className="video-container">
             <video ref={videoRef} autoPlay playsInline muted />
@@ -265,7 +265,6 @@ function App() {
           </div>
         </div>
 
-        {/* RIGHT SIDE - Stats & Controls */}
         <div className="right-panel">
           <div className="stats-container">
             <div className="stat-card reps-card">
@@ -297,10 +296,7 @@ function App() {
             </label>
           </div>
 
-          
-        </div>
-      </div>
-      <div className="instructions">
+          <div className="instructions">
             <p>💡 <strong>How to use:</strong></p>
             <ul>
               <li>Stand 6-8 feet back from camera</li>
@@ -309,6 +305,8 @@ function App() {
               <li>Stand up fully between reps</li>
             </ul>
           </div>
+        </div>
+      </div>
     </div>
   );
 }
