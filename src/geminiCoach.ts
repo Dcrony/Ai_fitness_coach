@@ -1,8 +1,6 @@
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
-// FIX: Remove unused poseData parameter or use it
-export async function getCoachingAdvice(landmarks: any, repCount: number): Promise<string> {
-  // If no API key, use fallback tips
+export async function getCoachingAdvice(repCount: number): Promise<string> {
   if (!API_KEY) {
     const tips = [
       "Keep your chest up!",
@@ -16,7 +14,6 @@ export async function getCoachingAdvice(landmarks: any, repCount: number): Promi
     return tips[Math.floor(Math.random() * tips.length)]
   }
   
-  // Real Gemini API call
   try {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`,

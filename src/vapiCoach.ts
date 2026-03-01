@@ -7,11 +7,16 @@ export const startCoachCall = async (systemPrompt: string) => {
     model: {
       provider: "openai",
       model: "gpt-4",
-      systemPrompt: systemPrompt
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        }
+      ]
     },
     voice: {
       provider: "11labs",
-      voiceId: "burt" // Energetic coach voice
+      voiceId: "burt"
     }
   })
 }
