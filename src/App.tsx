@@ -33,9 +33,9 @@ function App() {
   
   const squatCount = useRef(0)
   const lastVideoTime = useRef(-1)
-  const animationFrame = useRef<number>()
+  const animationFrame = useRef<number | null>(null)
   const lastRepTime = useRef(0)
-  const updateInterval = useRef<NodeJS.Timeout>()
+  const updateInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     loadPoseModel()
@@ -81,7 +81,6 @@ function App() {
       console.error("Vapi error:", error)
       setVapiError(true)
       setFeedback("Voice AI failed. Using backup voice...")
-      // Fallback to browser TTS
       speak("Workout started with backup voice coach")
     })
   }
@@ -112,7 +111,6 @@ function App() {
 
   const startWorkout = async () => {
     try {
-      // Get camera with audio for Vapi
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: "user" },
         audio: true
@@ -122,20 +120,24 @@ function App() {
         videoRef.current.srcObject = stream
       }
 
-      // Try to start Vapi call if available
       if (vapi && vapiKey) {
         try {
           await vapi.start({
             model: {
               provider: "openai",
               model: "gpt-4",
-              systemPrompt: `You are an energetic fitness coach named "Flex". You are watching the user exercise via video.
+              messages: [
+                {
+                  role: "system",
+                  content: `You are an energetic fitness coach named "Flex". You are watching the user exercise via video.
 Current workout: Squats.
 Give short, energetic encouragement (max 8 words).
 Be motivational and high-energy!
 If they ask questions about form, answer briefly.
 Count reps with them and celebrate milestones.
 Never say you're an AI - you're their coach!`
+                }
+              ]
             },
             voice: {
               provider: "11labs",
@@ -143,7 +145,6 @@ Never say you're an AI - you're their coach!`
             }
           })
 
-          // Send updates to coach every 3 seconds
           updateInterval.current = setInterval(() => {
             if (squatCount.current > 0 && isCallActive) {
               vapi.send({
@@ -159,12 +160,10 @@ Never say you're an AI - you're their coach!`
           speak("Voice coach unavailable. Using backup voice.")
         }
       } else {
-        // No Vapi key, use browser TTS
         setVapiError(true)
         speak("Workout started")
       }
 
-      // Start pose detection
       videoRef.current!.onloadeddata = () => detectPose()
 
     } catch (err) {
@@ -285,7 +284,6 @@ Never say you're an AI - you're their coach!`
       setSquatState("down")
       setFeedback("Good depth! Push up!")
       
-      // Notify Vapi coach or use TTS fallback
       if (vapi && isCallActive && !vapiError) {
         vapi.send({ type: "add-message", message: "User reached good squat depth" })
       } else {
@@ -298,7 +296,6 @@ Never say you're an AI - you're their coach!`
       lastRepTime.current = now
       setRepCount(squatCount.current)
 
-      // Notify Vapi coach or use TTS fallback
       if (vapi && isCallActive && !vapiError) {
         vapi.send({ type: "add-message", message: `User completed rep ${squatCount.current}! Give encouragement.` })
       } else {
